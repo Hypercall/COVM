@@ -13,27 +13,37 @@
 #define LEND_BYTE COVM_Instruction::LEND
 #define CALL_BYTE(x) COVM_Instruction::CALL, 0, x
 #define RET_BYTE COVM_Instruction::RET
+#define CMP_BYTE_EAX(x) COVM_Instruction::CMP, 1, 0, 1, 2, x
+#define JNT_BYTE_EAX(x) COVM_Instruction::JNT, 2, x 
+#define JMP_BYTE(x) COVM_Instruction::JMP, 2, x 
+#define JT_BYTE_EAX(x) COVM_Instruction::JT, 2, x 
 
 int main()
 {
 	COVM VM(4096);
 	VM.run(std::vector<std::uint8_t>
 	{
-		LSTART_BYTE(1), // Start function 
-		MOV_EAX_STACK_BYTE(2), // Move current stack value into eax
-		ADD_EAX_BYTE(1), // add 1 to eax
-		//RET_BYTE, // leave function
-		ADD_EAX_BYTE(1), // repeat
-		LEND_BYTE, // End of function
-		NOP_BYTE, // placeholder, does nothing
-		PUSH_EAX_BYTE(13), // Add 13 to stack
-		CALL_BYTE(1) // Call the function
-		
+		LSTART_BYTE(1), // Start of function  1
+		ADD_EAX_BYTE(1), // Add one to eax
+		LEND_BYTE, // End of function 1
+
+		LSTART_BYTE(2), // Start of function 2
+		ADD_EAX_BYTE(1), // Move current stack into eax
+		CMP_BYTE_EAX(100), // If eax reached 100 
+		JT_BYTE_EAX(1), // Jump if true (to label 1)
+		JMP_BYTE(2), // Jump always if not true (to label 2)
+		LEND_BYTE, // End of function 2
+
+		CALL_BYTE(2) // First instruction, call function 2
 	});
+
+
 	std::cout << "=============Register=============" << std::endl;
 	VM.printRegister();
 	std::cout << "==============Labels==============" << std::endl;
 	VM.printLabels();
+	std::cout << "==============Flags==============" << std::endl;
+	VM.printFlags();
 	std::cin.get();
 	return 1;
 }

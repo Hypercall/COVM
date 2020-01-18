@@ -30,7 +30,13 @@ enum COVM_Instruction : std::uint8_t
 	LEND,
 
 	CALL,
-	JMP
+	JMP,
+
+	CMP,
+
+	JT,
+	JNT
+
 };
 
 enum COVM_Register : std::uint32_t
@@ -74,7 +80,8 @@ enum COVM_Flag : std::uint32_t
 	TF,
 	IF,
 	DF,
-	OF
+	OF,
+	CTF,
 };
 
 
@@ -114,6 +121,7 @@ public:
 			std::cout << reg.first << " | " << reg.second << std::endl;
 		}
 	}
+
 	void printLabels()
 	{
 		for (auto lab : Labels)
@@ -121,6 +129,15 @@ public:
 			std::cout << lab.first << " | " << lab.second << std::endl;
 		}
 	}
+
+	void printFlags()
+	{
+		for (auto flg : Flags)
+		{
+			std::cout << flg.first << " | " << flg.second << std::endl;
+		}
+	}
+
 
 	void run(std::vector<std::uint8_t> Instructions)
 	{
@@ -570,14 +587,14 @@ public:
 					Labels[Instructions[i + 2]] = i + 2;
 					for (int in = 1; Instructions[in + i + 2] != LEND; in++)
 						FunctionBytes.push_back(Instructions[i + in + 2]);
-					i += FunctionBytes.size();
+					i += FunctionBytes.size() + 2;
 					break;
 				case 1:
 					FunctionBytes.clear();
 					Labels[Registers[Instructions[i + 1]]] = i + 2;
 					for (int in = 1; Instructions[in + i + 2] != LEND; in++)
 						FunctionBytes.push_back(Instructions[i + in + 2]);
-					i += FunctionBytes.size();
+					i += FunctionBytes.size() + 2;
 					break;
 				default:
 					throw std::exception("invalid mode");
@@ -694,6 +711,541 @@ public:
 					throw std::exception("invalid mode");
 				}
 
+				break;
+			case JMP:
+				/*
+					arguments:
+					Is_register_label_instruction = 1/0
+					register/label/instruction 
+				*/
+				switch (Instructions[i + 1])
+				{
+				case 0:
+					i = Instructions[i + 2];
+					break;
+				case 1:
+					i = Registers[Instructions[i + 2]];
+					break;
+				case 2:
+					i = Labels[Instructions[i + 2]];
+					break;
+				default:
+					throw std::exception("invalid mode");
+				}
+
+				break;
+			case CMP:
+				/*
+					arguments:
+					Is_register_compare, Is_data_compare_, Is_stack_compare = 1/0, 
+					compare_operator: (0 = ==; 1 = >; 2 = <; 3 = >=; 4 = <=; 5 = !=)
+					Type = 1/2/4/32/64
+					register
+					data/register
+
+				*/
+				switch (Instructions[i + 1])
+				{
+				case 0:
+					switch (Instructions[i + 2])
+					{
+					case 0:
+						switch (Instructions[i + 3])
+						{
+						case 1:
+							Flags[CTF] = (*reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 4]]) == *reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 5]]));
+							i += 4 + 1;
+							break;
+						case 2:
+							Flags[CTF] = (*reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 4]]) == *reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 5]]));
+							i += 4 + 2;
+							break;
+						case 4:
+							Flags[CTF] = (*reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 4]]) == *reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 5]]));
+							i += 4 + 4;
+							break;
+						case 8:
+							Flags[CTF] = (*reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 4]]) == *reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 5]]));
+							i += 4 + 8;
+							break;
+						default:
+							throw std::exception("invalid byte count");
+						}
+						break;
+					case 1:
+						switch (Instructions[i + 3])
+						{
+						case 1:
+							Flags[CTF] = (*reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 4]]) > *reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 5]]));
+							i += 4 + 1;
+							break;
+						case 2:
+							Flags[CTF] = (*reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 4]]) > *reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 5]]));
+							i += 4 + 2;
+							break;
+						case 4:
+							Flags[CTF] = (*reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 4]]) > *reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 5]]));
+							i += 4 + 4;
+							break;
+						case 8:
+							Flags[CTF] = (*reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 4]]) > *reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 5]]));
+							i += 4 + 8;
+							break;
+						default:
+							throw std::exception("invalid byte count");
+						}
+						break;
+					case 2:
+						switch (Instructions[i + 3])
+						{
+						case 1:
+							Flags[CTF] = (*reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 4]]) < * reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 5]]));
+							i += 4 + 1;
+							break;
+						case 2:
+							Flags[CTF] = (*reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 4]]) < * reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 5]]));
+							i += 4 + 2;
+							break;
+						case 4:
+							Flags[CTF] = (*reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 4]]) < * reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 5]]));
+							i += 4 + 4;
+							break;
+						case 8:
+							Flags[CTF] = (*reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 4]]) < * reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 5]]));
+							i += 4 + 8;
+							break;
+						default:
+							throw std::exception("invalid byte count");
+						}
+						break;
+					case 3:
+						switch (Instructions[i + 3])
+						{
+						case 1:
+							Flags[CTF] = (*reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 4]]) >= *reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 5]]));
+							i += 4 + 1;
+							break;
+						case 2:
+							Flags[CTF] = (*reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 4]]) >= *reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 5]]));
+							i += 4 + 2;
+							break;
+						case 4:
+							Flags[CTF] = (*reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 4]]) >= *reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 5]]));
+							i += 4 + 4;
+							break;
+						case 8:
+							Flags[CTF] = (*reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 4]]) >= *reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 5]]));
+							i += 4 + 8;
+							break;
+						default:
+							throw std::exception("invalid byte count");
+						}
+						break;
+					case 4:
+						switch (Instructions[i + 3])
+						{
+						case 1:
+							Flags[CTF] = (*reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 4]]) <= *reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 5]]));
+							i += 4 + 1;
+							break;
+						case 2:
+							Flags[CTF] = (*reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 4]]) <= *reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 5]]));
+							i += 4 + 2;
+							break;
+						case 4:
+							Flags[CTF] = (*reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 4]]) <= *reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 5]]));
+							i += 4 + 4;
+							break;
+						case 8:
+							Flags[CTF] = (*reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 4]]) <= *reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 5]]));
+							i += 4 + 8;
+							break;
+						default:
+							throw std::exception("invalid byte count");
+						}
+						break;
+					case 5:
+						switch (Instructions[i + 3])
+						{
+						case 1:
+							Flags[CTF] = (*reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 4]]) != *reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 5]]));
+							i += 4 + 1;
+							break;
+						case 2:
+							Flags[CTF] = (*reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 4]]) != *reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 5]]));
+							i += 4 + 2;
+							break;
+						case 4:
+							Flags[CTF] = (*reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 4]]) != *reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 5]]));
+							i += 4 + 4;
+							break;
+						case 8:
+							Flags[CTF] = (*reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 4]]) != *reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 5]]));
+							i += 4 + 8;
+							break;
+						default:
+							throw std::exception("invalid byte count");
+						}
+						break;
+					default:
+						throw std::exception("invalid comparison mode");
+					}
+					break;
+				case 1:
+					switch (Instructions[i + 2])
+					{
+					case 0:
+						switch (Instructions[i + 3])
+						{
+						case 1:
+							Flags[CTF] = *reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 4]]) == *reinterpret_cast<std::uint8_t*>(&Instructions[i + 5]);
+							i += 4 + 1;
+							break;
+						case 2:
+							Flags[CTF] = (*reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 4]]) == *reinterpret_cast<std::uint16_t*>(&Instructions[i + 5]));
+							i += 4 + 2;
+							break;
+						case 4:
+							Flags[CTF] = (*reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 4]]) == *reinterpret_cast<std::uint32_t*>(&Instructions[i + 5]));
+							i += 4 + 4;
+							break;
+						case 8:
+							Flags[CTF] = (*reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 4]]) == *reinterpret_cast<std::uint64_t*>(&Instructions[i + 5]));
+							i += 4 + 8;
+							break;
+						default:
+							throw std::exception("invalid byte count");
+							break;
+						}
+						break;
+					case 1:
+						switch (Instructions[i + 3])
+						{
+						case 1:
+							Flags[CTF] = (*reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 4]]) > *reinterpret_cast<std::uint8_t*>(&Instructions[i + 5]));
+							i += 4 + 1;
+							break;
+						case 2:
+							Flags[CTF] = (*reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 4]]) > *reinterpret_cast<std::uint16_t*>(&Instructions[i + 5]));
+							i += 4 + 2;
+							break;
+						case 4:
+							Flags[CTF] = (*reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 4]]) > *reinterpret_cast<std::uint32_t*>(&Instructions[i + 5]));
+							i += 4 + 4;
+							break;
+						case 8:
+							Flags[CTF] = (*reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 4]]) > *reinterpret_cast<std::uint64_t*>(&Instructions[i + 5]));
+							i += 4 + 8;
+							break;
+						default:
+							throw std::exception("invalid byte count");
+							break;
+						}
+						break;
+					case 2:
+						switch (Instructions[i + 3])
+						{
+						case 1:
+							Flags[CTF] = (*reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 4]]) < *reinterpret_cast<std::uint8_t*>(&Instructions[i + 5]));
+							i += 4 + 1;
+							break;
+						case 2:
+							Flags[CTF] = (*reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 4]]) < *reinterpret_cast<std::uint16_t*>(&Instructions[i + 5]));
+							i += 4 + 2;
+							break;
+						case 4:
+							Flags[CTF] = (*reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 4]]) < *reinterpret_cast<std::uint32_t*>(&Instructions[i + 5]));
+							i += 4 + 4;
+							break;
+						case 8:
+							Flags[CTF] = (*reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 4]]) < *reinterpret_cast<std::uint64_t*>(&Instructions[i + 5]));
+							i += 4 + 8;
+							break;
+						default:
+							throw std::exception("invalid byte count");
+							break;
+						}
+						break;
+					case 3:
+						switch (Instructions[i + 4])
+						{
+						case 1:
+							Flags[CTF] = (*reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 4]]) >= *reinterpret_cast<std::uint8_t*>(&Instructions[i + 5]));
+							i += 4 + 1;
+							break;
+						case 2:
+							Flags[CTF] = (*reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 4]]) >= *reinterpret_cast<std::uint16_t*>(&Instructions[i + 5]));
+							i += 4 + 2;
+							break;
+						case 4:
+							Flags[CTF] = (*reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 4]]) >= *reinterpret_cast<std::uint32_t*>(&Instructions[i + 5]));
+							i += 4 + 4;
+							break;
+						case 8:
+							Flags[CTF] = (*reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 4]]) >= *reinterpret_cast<std::uint64_t*>(&Instructions[i + 5]));
+							i += 4 + 8;
+							break;
+						default:
+							throw std::exception("invalid byte count");
+							break;
+						}
+						break;
+					case 4:
+						switch (Instructions[i + 4])
+						{
+						case 1:
+							Flags[CTF] = (*reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 5]]) <= *reinterpret_cast<std::uint8_t*>(&Instructions[i + 5]));
+							i += 4 + 1;
+							break;
+						case 2:
+							Flags[CTF] = (*reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 5]]) <= *reinterpret_cast<std::uint16_t*>(&Instructions[i + 5]));
+							i += 4 + 2;
+							break;
+						case 4:
+							Flags[CTF] = (*reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 5]]) <= *reinterpret_cast<std::uint32_t*>(&Instructions[i + 5]));
+							i += 4 + 4;
+							break;
+						case 8:
+							Flags[CTF] = (*reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 5]]) <= *reinterpret_cast<std::uint64_t*>(&Instructions[i + 5]));
+							i += 4 + 8;
+							break;
+						default:
+							throw std::exception("invalid byte count");
+							break;
+						}
+						break;
+					case 5:
+						switch (Instructions[i + 4])
+						{
+						case 1:
+							Flags[CTF] = (*reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 4]]) != *reinterpret_cast<std::uint8_t*>(&Instructions[i + 5]));
+							i += 4 + 1;
+							break;
+						case 2:
+							Flags[CTF] = (*reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 4]]) != *reinterpret_cast<std::uint16_t*>(&Instructions[i + 5]));
+							i += 4 + 2;
+							break;
+						case 4:
+							Flags[CTF] = (*reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 4]]) != *reinterpret_cast<std::uint32_t*>(&Instructions[i + 5]));
+							i += 4 + 4;
+							break;
+						case 8:
+							Flags[CTF] = (*reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 4]]) != *reinterpret_cast<std::uint64_t*>(&Instructions[i + 5]));
+							i += 4 + 8;
+							break;
+						default:
+							throw std::exception("invalid byte count");
+							break;
+						}
+					}
+					break;
+				case 2:
+					switch (Instructions[i + 2])
+					{
+					case 0:
+						switch (Instructions[i + 3])
+						{
+						case 1:
+							Flags[CTF] = (*reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 5]]) == *reinterpret_cast<std::uint8_t*>(&Stack[StackCounter]));
+							i += 5 + 1;
+							break;
+						case 2:
+							Flags[CTF] = (*reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 5]]) == *reinterpret_cast<std::uint16_t*>(&Stack[StackCounter]));
+							i += 5 + 2;
+							break;
+						case 4:
+							Flags[CTF] = (*reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 5]]) == *reinterpret_cast<std::uint32_t*>(&Stack[StackCounter]));
+							i += 5 + 4;
+							break;
+						case 8:
+							Flags[CTF] = (*reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 5]]) == *reinterpret_cast<std::uint64_t*>(&Stack[StackCounter]));
+							i += 5 + 8;
+							break;
+						default:
+							throw std::exception("invalid byte count");
+						}
+						break;
+					case 1:
+						switch (Instructions[i + 3])
+						{
+						case 1:
+							Flags[CTF] = (*reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 4]]) > *reinterpret_cast<std::uint8_t*>(&Stack[StackCounter]));
+							i += 3 + 1;
+							break;
+						case 2:
+							Flags[CTF] = (*reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 4]]) > *reinterpret_cast<std::uint16_t*>(&Stack[StackCounter]));
+							i += 3 + 2;
+							break;
+						case 4:
+							Flags[CTF] = (*reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 4]]) > *reinterpret_cast<std::uint32_t*>(&Stack[StackCounter]));
+							i += 3 + 4;
+							break;
+						case 8:
+							Flags[CTF] = (*reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 4]]) > *reinterpret_cast<std::uint64_t*>(&Stack[StackCounter]));
+							i += 3 + 8;
+							break;
+						default:
+							throw std::exception("invalid byte count");
+						}
+						break;
+					case 2:
+						switch (Instructions[i + 3])
+						{
+						case 1:
+							Flags[CTF] = (*reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 4]]) < *reinterpret_cast<std::uint8_t*>(&Stack[StackCounter]));
+							i += 3 + 1;
+							break;
+						case 2:
+							Flags[CTF] = (*reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 4]]) < *reinterpret_cast<std::uint16_t*>(&Stack[StackCounter]));
+							i += 3 + 2;
+							break;
+						case 4:
+							Flags[CTF] = (*reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 4]]) < *reinterpret_cast<std::uint32_t*>(&Stack[StackCounter]));
+							i += 3 + 4;
+							break;
+						case 8:
+							Flags[CTF] = (*reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 4]]) < *reinterpret_cast<std::uint64_t*>(&Stack[StackCounter]));
+							i += 3 + 8;
+							break;
+						default:
+							throw std::exception("invalid byte count");
+						}
+						break;
+					case 3:
+						switch (Instructions[i + 3])
+						{
+						case 1:
+							Flags[CTF] = (*reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 4]]) >= *reinterpret_cast<std::uint8_t*>(&Stack[StackCounter]));
+							i += 3 + 1;
+							break;
+						case 2:
+							Flags[CTF] = (*reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 4]]) >= *reinterpret_cast<std::uint16_t*>(&Stack[StackCounter]));
+							i += 3 + 2;
+							break;
+						case 4:
+							Flags[CTF] = (*reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 4]]) >= *reinterpret_cast<std::uint32_t*>(&Stack[StackCounter]));
+							i += 3 + 4;
+							break;
+						case 8:
+							Flags[CTF] = (*reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 4]]) >= *reinterpret_cast<std::uint64_t*>(&Stack[StackCounter]));
+							i += 3 + 8;
+							break;
+						default:
+							throw std::exception("invalid byte count");
+						}
+						break;
+					case 4:
+						switch (Instructions[i + 3])
+						{
+						case 1:
+							Flags[CTF] = (*reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 4]]) <= *reinterpret_cast<std::uint8_t*>(&Stack[StackCounter]));
+							i += 3 + 1;
+							break;
+						case 2:
+							Flags[CTF] = (*reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 4]]) <= *reinterpret_cast<std::uint16_t*>(&Stack[StackCounter]));
+							i += 3 + 2;
+							break;
+						case 4:
+							Flags[CTF] = (*reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 4]]) <= *reinterpret_cast<std::uint32_t*>(&Stack[StackCounter]));
+							i += 3 + 4;
+							break;
+						case 8:
+							Flags[CTF] = (*reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 4]]) <= *reinterpret_cast<std::uint64_t*>(&Stack[StackCounter]));
+							i += 3 + 8;
+							break;
+						default:
+							throw std::exception("invalid byte count");
+						}
+						break;
+					case 5:
+						switch (Instructions[i + 3])
+						{
+						case 1:
+							Flags[CTF] = (*reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 4]]) != *reinterpret_cast<std::uint8_t*>(&Stack[StackCounter]));
+							i += 3 + 1;
+							break;
+						case 2:
+							Flags[CTF] = (*reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 4]]) != *reinterpret_cast<std::uint16_t*>(&Stack[StackCounter]));
+							i += 3 + 2;
+							break;
+						case 4:
+							Flags[CTF] = (*reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 4]]) != *reinterpret_cast<std::uint32_t*>(&Stack[StackCounter]));
+							i += 3 + 4;
+							break;
+						case 8:
+							Flags[CTF] = (*reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 4]]) != *reinterpret_cast<std::uint64_t*>(&Stack[StackCounter]));
+							i += 3 + 8;
+							break;
+						default:
+							throw std::exception("invalid byte count");
+						}
+						break;
+					}
+					break;
+				default:
+					throw std::exception("invalid comparison mode");
+				}
+
+				break;
+			case JT:
+				/*
+					arguments:
+					Is_register_label_instruction = 1/0
+					register/label/instruction
+				*/
+				switch (Instructions[i + 1])
+				{
+				case 0:
+					if(Flags[CTF])
+						i = Instructions[i + 2];
+					else
+						i += 2;
+					break;
+				case 1:
+					if (Flags[CTF])
+						i = Registers[Instructions[i + 2]];
+					else
+						i += 2;
+					break;
+				case 2:
+					if (Flags[CTF])
+						i = Labels[Instructions[i + 2]];
+					else
+						i += 2;
+					break;
+				default:
+					throw std::exception("invalid mode");
+				}
+				break;
+			case JNT:
+				/*
+					arguments:
+					Is_register_label_instruction = 1/0
+					register/label/instruction
+				*/
+				switch (Instructions[i + 1])
+				{
+				case 0:
+					if (!Flags[CTF])
+						i = Instructions[i + 2];
+					else
+						i += 2;
+					break;
+				case 1:
+					if (!Flags[CTF])
+						i = Registers[Instructions[i + 2]];
+					else
+						i += 2;
+					break;
+				case 2:
+					if (!Flags[CTF])
+						i = Labels[Instructions[i + 2]];
+					else
+						i += 2;
+					break;
+				default:
+					throw std::exception("invalid mode");
+				}
 				break;
 			}
 		}
