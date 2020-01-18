@@ -28,6 +28,9 @@
 17. LEND - Defines the end of a function
 18. CALL - Calls a function by index
 19. JMP - Jumps to an instruction
+20. CMP - Compares register to any given data (register or hard-coded value)
+21. JT - Jumps if the above check was true
+22. JNT - Jumps if the above check was false
 
 more will be added later.
 
