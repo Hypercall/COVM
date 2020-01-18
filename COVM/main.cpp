@@ -20,7 +20,7 @@ int main()
 	VM.run(std::vector<std::uint8_t>
 	{
 		LSTART_BYTE(1), // Start function 
-		MOV_EAX_STACK_BYTE(2), // Move current stack into eax
+		MOV_EAX_STACK_BYTE(2), // Move current stack value into eax
 		ADD_EAX_BYTE(1), // add 1 to eax
 		//RET_BYTE, // leave function
 		ADD_EAX_BYTE(1), // repeat
