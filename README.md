@@ -8,6 +8,12 @@
 
 <h4 align="center">A lightweight stack-based x86/x64 VM.</h4>
 
+## Operators
+
+#aa
+
+To compile COVM you need [Visual Studio](https://www.visualstudio.com).
+
 ## Compiling
 
 To compile COVM you need [Visual Studio](https://www.visualstudio.com).
