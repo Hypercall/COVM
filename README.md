@@ -50,7 +50,7 @@ Currently the COVM does not make use of flags, here are ones planned for the fut
 6. IF
 7. DF
 8. OF
-
+9. CTF
 
 ## Compiling
 
