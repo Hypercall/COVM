@@ -28,7 +28,7 @@ int main()
 		LEND_BYTE, // End of function 1
 
 		LSTART_BYTE(2), // Start of function 2
-		ADD_EAX_BYTE(1), // Move current stack into eax
+		ADD_EAX_BYTE(1), // Increases eax by 1
 		CMP_BYTE_EAX(100), // If eax reached 100 
 		JT_BYTE_EAX(1), // Jump if true (to label 1)
 		JMP_BYTE(2), // Jump always if not true (to label 2)
