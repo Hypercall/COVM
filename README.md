@@ -27,7 +27,7 @@
 16. LSTART - Defines the start of a function
 17. LEND - Defines the end of a function
 18. CALL - Calls a function by index
-19. JMP - Jumps to a instruction
+19. JMP - Jumps to an instruction
 
 more will be added later.
 
