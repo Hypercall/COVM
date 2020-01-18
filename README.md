@@ -6,7 +6,7 @@
   <br>
 </h1>
 
-<h4 align="center">A lightweight stack-based x86/x64 VM.</h4>
+<h4 align="center">A lightweight stack-based and assembly-like x86/x64 VM.</h4>
 
 ## Operators
 1.  NOP - An operator that does nothing.
