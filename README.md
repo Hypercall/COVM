@@ -32,10 +32,10 @@
 more will be added later.
 
 ## Registers
-Registers do not have a fixed size, but it is recommended to split them:
-- 16 bit: AX, BX, CX, DX
-- 32 bit: EAX, ECX, EDX, EBX, ESP, EBP, ESI, EDI
-- 64 bit: RAX, RCX, RDX, RBX, RSP, RBP, RSI, RDI (R8, R9, ...)
+Registers do not have a fixed size, but it is recommended to split them like the following:
+- 16 bit-registers: AX, BX, CX, DX
+- 32 bit-registers: EAX, ECX, EDX, EBX, ESP, EBP, ESI, EDI
+- 64 bit-registers: RAX, RCX, RDX, RBX, RSP, RBP, RSI, RDI (R8, R9, ...)
 
 ## Flags
 Currently the COVM does not make use of flags, here are ones planned for the future usage:
