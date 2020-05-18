@@ -1,0 +1,67 @@
+﻿<mah:MetroWindow x:Class="COVM_IDE.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        xmlns:avalon="http://icsharpcode.net/sharpdevelop/avalonedit"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800" TitleForeground="#999988" Closing="MetroWindow_Closing">
+    <Grid>
+        <DockPanel>
+            <Menu DockPanel.Dock="Top" SnapsToDevicePixels="True" Margin="2,0,0,0">
+                <MenuItem Header="FILE">
+                    <MenuItem Header="Rocket slot 1">
+                        <MenuItem Header="Fire slot"/>
+                        <Separator/>
+                        <MenuItem Header="Relaod slot"/>
+                        <MenuItem Header="Report damage to control room"/>
+                    </MenuItem>
+                    <MenuItem Header="Rocket slot 2">
+                        <MenuItem Header="damaged .. being repaired" IsEnabled="False"/>
+                    </MenuItem>
+                </MenuItem>
+                <MenuItem Header="COMPILER">
+                    <MenuItem Header="Left engine">
+                        <MenuItem Header="Full speed ahead"/>
+                        <MenuItem Header="2/3 speed"/>
+                        <MenuItem Header="1/3 speed"/>
+                        <MenuItem Header="Stop engine"/>
+                    </MenuItem>
+                    <MenuItem Header="Right engine">
+                        <MenuItem Header="Full speed ahead"/>
+                        <MenuItem Header="2/3 speed"/>
+                        <MenuItem Header="1/3 speed"/>
+                        <MenuItem Header="Stop engine"/>
+                    </MenuItem>
+                </MenuItem>
+                <Button x:Name="StartBtn" Click="StartBtn_Click"> 
+                    <StackPanel>
+                        <Image  Height="15" Width="15" Source="Images/Play.png" />
+                    </StackPanel>
+                </Button>
+                <Button x:Name="StopBtn" IsEnabled="False">
+                    <StackPanel>
+                        <Image  Height="15" Width="15" Source="Images/Stop.png" />
+                    </StackPanel>
+                </Button>
+            </Menu>
+
+            <TabControl Margin="0,10,0,0">
+                <TabItem Header="Start">
+                    <Grid Margin="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="8*"></RowDefinition>
+                            <RowDefinition Height="2*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <avalon:TextEditor x:Name="TextEdit" ShowLineNumbers
+                                           ="True"  Text="" PreviewMouseWheel="TextEdit_PreviewMouseWheel" Background="#FF292929" Foreground="White" FontSize="20" MouseHover="TextEdit_MouseHover" MouseHoverStopped="TextEdit_MouseHoverStopped" TextChanged="TextEdit_TextChanged"/>
+                        <RichTextBox x:Name="OutputRTB" Grid.Row="1" ScrollViewer.CanContentScroll="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" mah:ScrollViewerHelper.IsHorizontalScrollWheelEnabled="True"></RichTextBox>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+
+        </DockPanel>
+        
+    </Grid>
+</mah:MetroWindow>

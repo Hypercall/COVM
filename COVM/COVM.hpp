@@ -5,6 +5,7 @@
 #include <map>
 #include <array>
 #include <functional>
+#include <vector>
 
 
 enum COVM_Instruction : std::uint8_t
@@ -66,8 +67,6 @@ enum COVM_Register : std::uint32_t
 	RBP,
 	RSI,
 	RDI,
-
-
 };
 
 enum COVM_Flag : std::uint32_t
@@ -153,7 +152,7 @@ public:
 				/*
 					arguments:
 					Is_register = 1/0
-					Type = 1/2/4/32/64
+					Type = 1/2/4/8
 				*/
 				switch (Instructions[i + 1])
 				{
@@ -183,7 +182,7 @@ public:
 					break;
 				case 1:
 					Registers[Instructions[i + 2]] += Registers[Instructions[i + 3]];
-					i += 2;
+					i += 3;
 					break;
 				default:
 					throw std::exception("invalid mode");
@@ -223,7 +222,7 @@ public:
 					break;
 				case 1:
 					Registers[Instructions[i + 2]] -= Registers[Instructions[i + 3]];
-					i += 2;
+					i += 3;
 					break;
 				default:
 					throw std::exception("invalid mode");
@@ -264,7 +263,7 @@ public:
 					break;
 				case 1:
 					Registers[Instructions[i + 2]] *= Registers[Instructions[i + 3]];
-					i += 2;
+					i += 3;
 					break;
 				default:
 					throw std::exception("invalid mode");
@@ -304,7 +303,7 @@ public:
 					break;
 				case 1:
 					Registers[Instructions[i + 2]] /= Registers[Instructions[i + 3]];
-					i += 2;
+					i += 3;
 					break;
 				default:
 					throw std::exception("invalid mode");
@@ -345,7 +344,7 @@ public:
 					break;
 				case 1:
 					Registers[Instructions[i + 2]] &= Registers[Instructions[i + 3]];
-					i += 2;
+					i += 3;
 					break;
 				default:
 					throw std::exception("invalid mode");
@@ -385,7 +384,7 @@ public:
 					break;
 				case 1:
 					Registers[Instructions[i + 2]] |= Registers[Instructions[i + 3]];
-					i += 2;
+					i += 3;
 					break;
 				default:
 					throw std::exception("invalid mode");
@@ -425,7 +424,7 @@ public:
 					break;
 				case 1:
 					Registers[Instructions[i + 2]] ^= Registers[Instructions[i + 3]];
-					i += 2;
+					i += 3;
 					break;
 				default:
 					throw std::exception("invalid mode");
@@ -445,19 +444,19 @@ public:
 					{
 					case 1:
 						*reinterpret_cast<std::uint8_t*>(&Registers[Instructions[i + 3]]) = !*reinterpret_cast<std::uint8_t*>(&Instructions[i + 3]);
-						i += 3 + 1;
+						i += 3;
 						break;
 					case 2:
 						*reinterpret_cast<std::uint16_t*>(&Registers[Instructions[i + 3]]) = !*reinterpret_cast<std::uint16_t*>(&Instructions[i + 3]);
-						i += 3 + 2;
+						i += 3;
 						break;
 					case 4:
 						*reinterpret_cast<std::uint32_t*>(&Registers[Instructions[i + 3]]) = !*reinterpret_cast<std::uint32_t*>(&Instructions[i + 3]);
-						i += 3 + 4;
+						i += 3;
 						break;
 					case 8:
 						*reinterpret_cast<std::uint64_t*>(&Registers[Instructions[i + 3]]) = !*reinterpret_cast<std::uint64_t*>(&Instructions[i + 3]);
-						i += 3 + 8;
+						i += 3;
 						break;
 					default:
 						throw std::exception("invalid byte count");
@@ -465,7 +464,7 @@ public:
 					break;
 				case 1:
 					Registers[Instructions[i + 2]] = !Registers[Instructions[i + 2]];
-					i += 2;
+					i += 3;
 					break;
 				default:
 					throw std::exception("invalid mode");
@@ -520,7 +519,7 @@ public:
 					break;
 				case 1:
 					Stack[++StackCounter] = Registers[Instructions[i + 2]];
-					i += 1;
+					i += 2;
 					break;
 				default:
 					throw std::exception("invalid mode");
@@ -680,8 +679,8 @@ public:
 					}
 					break;
 				case 1:
-					Registers[Instructions[i + 2]] = Registers[Instructions[i + 2]];
-					i += 2;
+					Registers[Instructions[i + 2]] = Registers[Instructions[i + 3]];
+					i += 3;
 					break;
 				case 2:
 					size_per_byte = Instructions[i + 2];
@@ -1214,7 +1213,7 @@ public:
 						i += 2;
 					break;
 				default:
-					throw std::exception("invalid mode");
+					throw std::exception("jt invalid mode");
 				}
 				break;
 			case JNT:
@@ -1244,18 +1243,17 @@ public:
 						i += 2;
 					break;
 				default:
-					throw std::exception("invalid mode");
+					throw std::exception("jnt invalid mode");
 				}
 				break;
 			}
 		}
-	FINISH:
 		return;
 	}
 
-	std::map<std::uintptr_t, std::uintptr_t> Labels;
-	std::map<std::uintptr_t, std::uintptr_t> Registers;
-	std::map<std::uintptr_t, std::uintptr_t> Flags;
+	std::map<std::uint64_t, std::uint64_t> Labels;
+	std::map<std::uint64_t, std::uint64_t> Registers;
+	std::map<std::uint64_t, std::uint64_t> Flags;
 	std::uint8_t *Stack;
 	std::uint32_t OldCounter;
 	std::uintptr_t StackCounter;
