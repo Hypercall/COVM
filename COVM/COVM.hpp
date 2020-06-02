@@ -640,10 +640,10 @@ public:
 					Is_register = 1/0
 					index of function
 				*/
-				int counter;
 				counter = 0;
 				while (Instructions[i + counter] != LEND)
 					counter++;
+				std::cout << counter << std::endl;
 				i += counter-1;
 				break;
 			case MOV:

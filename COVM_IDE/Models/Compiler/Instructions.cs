@@ -111,7 +111,6 @@ namespace COVM_IDE.Models.Compiler
 				case VM_Instruction.DEC:
 				case VM_Instruction.DIV:
 				case VM_Instruction.INC:
-				case VM_Instruction.JMP:
 				case VM_Instruction.JNT:
 				case VM_Instruction.JT:
 				case VM_Instruction.MOV:

@@ -35,6 +35,10 @@ namespace COVM_IDE.Models.Compiler
                     foreach (var label in context.Labels)
                         Keywords.Add(label.Key);
                     break;
+                case Instructions.VM_Instruction.JMP:
+                    foreach (var label in context.Labels)
+                        Keywords.Add(label.Key);
+                    break;
                 default:
                     break;
             }
@@ -72,24 +76,16 @@ namespace COVM_IDE.Models.Compiler
                     case Instructions.VM_Instruction.MUL:
                     case Instructions.VM_Instruction.AND:
                     case Instructions.VM_Instruction.OR:
-                    case Instructions.VM_Instruction.NOT:
                     case Instructions.VM_Instruction.XOR:
                     case Instructions.VM_Instruction.MOV:
                         new Handler.ArithmeticHandler().Compile((int)instructionId, str, ref context.ByteCode);
                         break;
+                    case Instructions.VM_Instruction.NOT:
+                        new Handler.NOTHandler().Compile((int)instructionId, str, ref context.ByteCode);
+                        break;
                     case Instructions.VM_Instruction.LSTART:
-
-
-                        /*foreach (var label in context.Labels)
-                        {
-                            if (label.Key.Equals(commandsplit[1], StringComparison.OrdinalIgnoreCase))
-                                goto 
-                        }
-                        context.Labels.Add(commandsplit[1], context.Labels.Count + 1);
-                        new Handler.LSTARTHandler().Compile((int)context.Labels.Count, "", ref context.ByteCode);*/
                         break;
                     case Instructions.VM_Instruction.LEND:
-                        //new Handler.LENDHandler().Compile((int)instructionId, str, ref context.ByteCode);
                         break;
                     case Instructions.VM_Instruction.CALL:
                         instructionId = 0;
@@ -119,6 +115,12 @@ namespace COVM_IDE.Models.Compiler
                             throw new Exception("JMP : Label not found!");
                         new Handler.JMPHandler().Compile((int)instructionId, str, ref context.ByteCode);
                         break;
+                    case Instructions.VM_Instruction.RET:
+                        new Handler.RETHandler().Compile((int)instructionId, str, ref context.ByteCode);
+                        break;
+                    case Instructions.VM_Instruction.INC:
+
+                    
                     default:
                         throw new Exception("invalid operator : " + instr);
                 }
@@ -147,7 +149,6 @@ namespace COVM_IDE.Models.Compiler
                 switch (instructionId)
                 {
                     case Instructions.VM_Instruction.LSTART:
-
                         bool isFound = false;
                         foreach (var label in context.Labels)
                         {
