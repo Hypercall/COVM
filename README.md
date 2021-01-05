@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-  <a href="https://cwanocak.eu"><img src="https://i.imgur.com/LR2Fr3W.png" alt="logo" width="200"></a>
+  <a href="https://hypercall.net"><img src="https://i.imgur.com/LR2Fr3W.png" alt="logo" width="200"></a>
   <br>
   COVM 
   <br>
@@ -54,7 +54,7 @@ Currently the COVM does not make use of flags, here are ones planned for the fut
 
 ## Compiling
 
-To compile COVM you need [Visual Studio](https://www.visualstudio.com).
+You need [Visual Studio](https://www.visualstudio.com) to compile COVM.
 
 ## License
 
