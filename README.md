@@ -6,7 +6,7 @@
   <br>
 </h1>
 
-<h4 align="center">A lightweight, stack-based/register-based and assembly-like x86/x64 VM.</h4>
+<h4 align="center"> (In-progress) A lightweight, stack-based/register-based and assembly-like x86/x64 VM.</h4>
 
 ## COVM?
 The goal of this project is use the virtualization power to provide a safe encryption used in the network communication.
